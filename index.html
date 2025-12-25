@@ -1,0 +1,2058 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>VA Compensation Calculator</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.4.0/html-docx.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+     body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #eef2f7;
+      margin: 0;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 1500px;
+      width: 100%;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow: visible;
+    }
+    .table-container {
+      background: #fafafa;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+}
+.table-container th input[type="checkbox"] {
+  accent-color: #28a745;
+}
+
+
+/* Let the table grow wider than its parent if needed */
+.table-container table {
+  width: 100%;         /* fill the wrapper */
+  min-width: 1200px;   /* bump this up or down to accommodate your longest Condition text */
+  table-layout: auto;  /* size columns to their content */
+  border-collapse: collapse;
+}
+
+/* Consistent cell styling */
+.table-container th,
+.table-container td {
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+}
+
+/* Prevent the Condition column from wrapping */
+.table-container th:first-child,
+.table-container td:first-child {
+  white-space: nowrap;
+  min-width: 260px;    /* matches your inline width, can adjust wider if needed */
+}
+    .controls-container {
+      margin-bottom: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .results-container {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 30px;
+    }
+.table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 1rem;
+  }
+
+  .table-wrapper table {
+    width: 100%;          /* fill its container */
+    min-width: 900px;     /* adjust this up if you have very long names */
+    table-layout: auto;   /* let columns size to content */
+    border-collapse: collapse;
+  }
+
+  .table-wrapper th,
+  .table-wrapper td {
+    padding: 6px;
+    border: 1px solid #ccc;
+  }
+
+  /* Make the “Condition” column extra roomy and prevent wrapping */
+  .table-wrapper th:first-child,
+  .table-wrapper td:first-child {
+    min-width: 250px;
+    white-space: nowrap;
+  }
+ h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      margin-top: 15px;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background: #007bff;
+      color: white;
+    }
+    input, select {
+      width: 100%;
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .controls {
+      text-align: center;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+      .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .btn-primary { background-color: #007bff; color: white; }
+    .btn-success { background-color: #28a745; color: white; }
+    .btn-secondary { background-color: #6c757d; color: white; }
+    
+    .btn:hover { opacity: 0.9; }
+
+    label, input, select {
+      font-size: 14px;
+    }
+    input[type="text"], input[type="number"], select {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+
+.summary-box {
+  overflow: visible;
+  height: auto;
+  max-height: none;
+}
+
+#stepSection {
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+  display: block;
+}
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .controls, .btn, .step-box select, input, textarea {
+    display: none !important; /* Hide UI elements */
+  }
+
+  .summary, #stepSection, #whatIfSection {
+    page-break-before: auto;
+    page-break-after: always;
+  }
+
+  #export-content::before {
+    content: "Department of Veterans Affairs\\A VA Disability Compensation Summary";
+    white-space: pre;
+    display: block;
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 1px solid #000;
+    padding-bottom: 10px;
+  }
+
+  #export-content {
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: auto;
+  }
+}
+
+  
+/* --- UI refresh (Calc60) --- */
+body{padding:16px;}
+.container{border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,.08);}
+#conditionSearch{
+  width:min(420px, 56vw);
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid #dbe6f3;
+  outline:none;
+}
+#conditionSearch:focus{box-shadow:0 0 0 3px rgba(0,94,162,.18); border-color:#8bb9e6;}
+.table-container{border-radius:12px;}
+@media (max-width: 900px){
+  body{padding:10px;}
+  .container{padding:14px;}
+  th, td{font-size:12px;}
+  .btn{font-size:13px;}
+}
+
+  .app-header{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: white;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+  .app-title{
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+  }
+</style>
+<style>
+  /* highlight rating dates that haven’t been updated */
+  .invalid-date {
+    border: 2px solid red !important;
+    background-color: #ffe6e6 !important;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>VA Disability Compensation Calculator</h1><div class="table-container" id="conditionsSection">
+
+<div class="table-toolbar" style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:8px;">
+  <input accept=".html" id="ratingHTML" type="file" style="display:none;" onchange="parseVAHTML()">
+  <button class="btn btn-secondary" type="button" onclick="document.getElementById('ratingHTML').click()">📥 Load VA HTML</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th style="width: 260px;" title="Name of the service-connected disability or condition.">🩺 Condition</th>
+<th title="Diagnostic code assigned by the VA for this condition.">🔢 Code</th>
+<th title="Disability Benefits Questionnaire (DBQ) link associated with the condition.">☑️ DBQ</th>
+<th title="Assigned VA rating percentage for this condition.">🎯 Rating (%)</th>
+<th title="The date the condition was first officially rated.">📅 Rating Date</th>
+<th title="Indicate if this is a secondary condition to another one.">⚕️ Secondary</th>
+<th title="Effective date of the rating decision. Impacts backpay.">🗓️ Effective Date</th>
+<th title="Check this box to include this condition in the calculation.">🧮 Calculated</th>
+<th>💲 Back-pay Paid?</th>
+<th>🗑️ Delete</th> <!-- This is for the ❌ column -->
+</tr>
+</thead>
+<tbody id="conditions-container"></tbody>
+</table>
+<button id="restoreColumnsBtn" style="margin-top:8px;" type="button">
+    Restore Columns
+  </button>
+</div>
+<div class="controls-container" style="margin-top: 30px; display: flex; flex-direction: column; ">
+<!-- Row 1: Dependent Inputs and Load Button -->
+<div class="controls" id="dependentControls" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; font-family: sans-serif;">
+<!-- Left side: Spouse, Children, Parents -->
+<div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+<label class="toggle-container">
+<span class="toggle-label"><strong>Spouse</strong></span>
+<input id="hasSpouse" type="checkbox"/>
+<span class="slider"></span>
+</label>
+<label class="modern-input"><strong>
+      Children:</strong>
+<input id="numChildren" max="10" min="0" type="number"/>
+</label>
+<label class="modern-input"><strong>
+      Parents:</strong>
+<input id="numParents" max="2" min="0" type="number"/>
+</label>
+</div>
+</div>
+<!-- Row 2: Action Buttons (Left) and Scenario Save Controls (Right) -->
+<div class="controls" id="actionButtons">
+<div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+<!-- Left-side Buttons -->
+<div style="display: flex; gap: 15px; flex-wrap: wrap;">
+<button class="btn btn-primary" onclick="addCondition()">➕ Add Condition</button>
+<button class="btn btn-success" onclick="calculateCompensation()">🧮 Calculate</button>
+<button class="btn btn-secondary" disabled="" onclick="exportToPDF()">📄 Export to PDF</button>
+</div>
+<!-- Right-side Scenario Name + Save Button -->
+<div style="display: flex; align-items: center; gap: 10px;">
+<label for="scenarioName"><strong>Scenario Name:</strong></label>
+<input id="scenarioName" placeholder="e.g., Condition" style="width: 200px; padding: 5px;" type="text">
+<button class="btn btn-success" onclick="saveToDisk()">💾 Save Scenario</button>
+</input></div>
+</div>
+</div>
+<!-- Row 3: Load Scenario Controls Aligned Right -->
+<div class="controls" id="scenarioControls">
+<div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+<label for="scenarioSelect"><strong>Load Scenario:</strong></label>
+<select id="scenarioSelect"  size="8" style="width: 360px; padding: 8px; line-height: 1.35; max-width: 100%; border-radius: 10px;">
+<option value="">-- Select a Scenario --</option>
+</select>
+<button class="btn btn-primary" onclick="loadFromDisk()">📂 Load Scenario</button>
+</div>
+<div style="text-align: Right; margin-bottom: 25px;">
+<button class="btn btn-danger" id="deleteScenarioBtn" onclick="deleteScenario()" style="background-color:red; color:white;">🗑️ Delete Selected Scenario</button>
+</div>
+</div>
+<div class="summary" id="summary"></div>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; margin-top: 30px;">
+<!-- Step-by-Step Section -->
+<div id="stepSection" style="flex: 1; min-width: 300px;"></div>
+<!-- What-If + Backpay Section (Stacked Vertically) -->
+<div style="flex: 1; min-width: 300px;">
+<!-- What-If Section -->
+<div id="whatIfSection">
+<h3>What-If Scenario</h3>
+<label for="whatIfPercent">Select a hypothetical additional rating:</label>
+<select id="whatIfPercent">
+<option value="">-- Select Rating --</option>
+<option value="10">10%</option>
+<option value="20">20%</option>
+<option value="30">30%</option>
+<option value="40">40%</option>
+<option value="50">50%</option>
+<option value="60">60%</option>
+<option value="70">70%</option>
+<option value="80">80%</option>
+<option value="90">90%</option>
+<option value="100">100%</option>
+</select>
+<div id="whatIfOutput" style="margin-top: 10px;"></div>
+</div>
+<!-- Backpay Summary Section -->
+<div id="backpaySummary" style="margin-top: 30px;">
+<h3>Backpay Breakdown</h3>
+<div id="backpaySection"></div>
+</div>
+</div>
+</div>
+<script>
+
+// ✅ 2025 VA Disability Compensation Rates (Veteran alone)
+const payRatesBase = {
+  10:   175.51,  // 10% :contentReference[oaicite:3]{index=3}
+  20:   346.95,  // 20% :contentReference[oaicite:4]{index=4}
+  30:   537.42,  // 30% :contentReference[oaicite:5]{index=5}
+  40:   774.16,  // 40% :contentReference[oaicite:6]{index=6}
+  50:  1102.04,  // 50% :contentReference[oaicite:7]{index=7}
+  60:  1395.93,  // 60% :contentReference[oaicite:8]{index=8}
+  70:  1759.19,  // 70% :contentReference[oaicite:9]{index=9}
+  80:  2044.89,  // 80% :contentReference[oaicite:10]{index=10}
+  90:  2297.96,  // 90% :contentReference[oaicite:11]{index=11}
+  100: 3831.30   // 100% :contentReference[oaicite:12]{index=12}
+};
+
+let allConditions = new Set([
+  // Original entries
+  'Tinnitus',
+  'Hearing Loss',
+  'PTSD',
+  'Lumbosacral Strain',
+  'Radiculopathy',
+  'Migraines',
+  'Knee Pain',
+  'Sleep Apnea',
+  'Plantar Fasciitis',
+  'Depression',
+  'Anxiety',
+  'Neck Pain',
+  'Hypertension',
+  'Diabetes Mellitus Type 2',
+  'Peripheral Neuropathy',
+  'Ischemic Heart Disease',
+  'Bronchitis',
+  'Allergic Rhinitis',
+  'Erectile Dysfunction',
+  'GERD',
+
+  // Mental-health synonyms
+  'Post-Traumatic Stress Disorder',
+  'Major Depressive Disorder',
+  'Generalized Anxiety Disorder',
+  'Somatic Symptom Disorder',
+  'Adjustment Disorder',
+
+  // Spine / musculoskeletal
+  'Degenerative Disc Disease',
+  'Spinal Stenosis',
+  'Spondylolisthesis',
+  'Lumbar Strain',
+  'Cervical Strain',
+  'Thoracolumbar Spine Pain',
+
+  // Neurological
+  'Sciatica',
+  'Carpal Tunnel Syndrome',
+
+  // Headaches
+  'Headaches',
+
+  // Lower extremities
+  'Knee Instability',
+  'ACL Tear',
+  'Meniscal Tear',
+  'Ankle Sprain',
+  'Foot Conditions',
+  'Flatfoot',
+  'Degenerative Arthritis',
+  'Post-Traumatic Arthritis',
+
+  // Cardiovascular
+  'High Blood Pressure',
+  'Coronary Artery Disease',
+
+  // Respiratory
+  'COPD',
+  'Asthma',
+
+  // ENT
+  'Chronic Sinusitis',
+
+  // Sleep
+  'Obstructive Sleep Apnea',
+
+  // Digestive
+  'Hiatal Hernia',
+
+  // Skin
+  'Dermatitis',
+  'Eczema',
+  'Psoriasis',
+  'Scars',
+
+  // Endocrine
+  'Hypothyroidism'
+]);
+
+// ✅ Diagnostic Codes for VA Conditions
+const conditionCodes = {
+  // Hearing / ENT
+  "Tinnitus": "6260", "Hearing Loss": "6200",
+
+  // Mental Health
+  "Post-Traumatic Stress Disorder": "9411", "PTSD": "9411",
+  "Depression": "9432", "Major Depressive Disorder": "9432",
+  "Anxiety": "9400", "Generalized Anxiety Disorder": "9400",
+  "Somatic Symptom Disorder": "9421", "Adjustment Disorder": "9440",
+
+  // Spine / Musculoskeletal
+  "Lumbosacral Strain": "5242", "Degenerative Disc Disease": "5242",
+  "Spinal Stenosis": "5238", "Spondylolisthesis": "5239",
+  "Lumbar Strain": "5242", "Cervical Strain": "5237",
+  "Neck Pain": "5256", "Thoracolumbar Spine Pain": "5242",
+
+  // Neurological
+  "Radiculopathy": "8520", "Sciatica": "8520",
+  "Peripheral Neuropathy": "8620", "Carpal Tunnel Syndrome": "8515",
+
+  // Headaches
+  "Migraines": "8100", "Headaches": "8100",
+
+  // Lower Extremities
+  "Knee Pain": "5257", "Knee Instability": "5257",
+  "ACL Tear": "5257", "Meniscal Tear": "5258",
+  "Ankle Sprain": "5271", "Plantar Fasciitis": "5269",
+  "Foot Conditions": "5284", "Flatfoot": "5276",
+  "Degenerative Arthritis": "5003", "Post-Traumatic Arthritis": "5010",
+
+  // Cardiovascular
+  "Hypertension": "7101", "High Blood Pressure": "7101",
+  "Ischemic Heart Disease": "7005", "Coronary Artery Disease": "7005",
+
+  // Respiratory
+  "Bronchitis": "6600", "COPD": "6604", "Asthma": "6602",
+
+  // ENT
+  "Allergic Rhinitis": "6522", "Chronic Sinusitis": "6513",
+
+  // Sleep
+  "Sleep Apnea": "6847", "Obstructive Sleep Apnea": "6847",
+
+  // Digestive
+  "GERD": "7346", "Hiatal Hernia": "7346",
+
+  // Genitourinary
+  "Erectile Dysfunction": "7522",
+
+  // Skin
+  "Dermatitis": "7806", "Eczema": "7806", "Psoriasis": "7816", "Scars": "7804",
+
+  // Endocrine / Diabetes
+  "Diabetes Mellitus Type 2": "7913", "Hypothyroidism": "7903"
+};
+const conditionDBQs = {
+  "6260": "Audiology and Tinnitus",
+  "6200": "Hearing Loss",
+  "9411": "PTSD",
+  "9421": "Mental Disorders",
+  "9432": "Mental Disorders",
+  "9400": "Mental Disorders",
+  "5242": "Lumbosacral and Thoracic Spine Conditions",
+  "5238": "Lumbosacral and Thoracic Spine Conditions",
+  "5239": "Lumbosacral and Thoracic Spine Conditions",
+  "5237": "Cervical Spine (Neck) Conditions",
+  "5256": "Cervical Spine (Neck) Conditions",
+  "8520": "Neuropathy",
+  "8620": "Neuropathy",
+  "8515": "Neuropathy",
+  "8100": "Headaches",
+  "5257": "Knee and Lower Leg Conditions",
+  "5258": "Knee and Lower Leg Conditions",
+  "5271": "Foot Conditions",
+  "5269": "Foot Conditions",
+  "5276": "Foot Conditions",
+  "5284": "Foot Conditions",
+  "5003": "Joint Conditions",
+  "5010": "Joint Conditions",
+  "7101": "Hypertension",
+  "7005": "Coronary Artery Disease",
+  "6600": "Respiratory Conditions",
+  "6602": "Respiratory Conditions",
+  "6604": "Respiratory Conditions",
+  "6522": "Nasal and Sinus Conditions",
+  "6513": "Nasal and Sinus Conditions",
+  "6847": "Sleep Apnea",
+  "7346": "Esophageal Conditions",
+  "7522": "Genitourinary Conditions",
+  "7806": "Skin Conditions",
+  "7804": "Skin Conditions",
+  "7816": "Skin Conditions",
+  "7913": "Endocrine Disorders",
+  "7903": "Endocrine Disorders"
+};
+
+const formLinks = {
+  "Audiology and Tinnitus": "https://www.benefits.va.gov/compensation/docs/Ear_Including_Vestibular_and_Infectious.pdf",
+  "Hearing Loss":                null,
+  "PTSD":                        "https://www.benefits.va.gov/compensation/docs/PTSD_Review.pdf",
+  "Mental Disorders":            "https://www.benefits.va.gov/compensation/docs/Mental_Disorders.pdf",
+  "Lumbosacral and Thoracic Spine Conditions": "https://www.benefits.va.gov/compensation/docs/Back_Thoracolumbar_Spine.pdf",
+  "Cervical Spine (Neck) Conditions":          "https://www.benefits.va.gov/compensation/docs/Neck_Conditions_Cervical_Spine.pdf",
+  "Neuropathy":                  "https://www.benefits.va.gov/compensation/docs/Peripheral_Nerves.pdf",
+  "Headaches":                   "https://www.benefits.va.gov/compensation/docs/Headaches_Including_Migraines.pdf",
+  "Knee and Lower Leg Conditions":"https://www.benefits.va.gov/compensation/docs/Knee_and_Lower_Leg.pdf",
+  "Foot Conditions":             "https://www.benefits.va.gov/compensation/docs/Foot_Conditions_Including_Flatfoot_Pes_Planus.pdf",
+  "Joint Conditions":            "https://www.benefits.va.gov/compensation/docs/Bones_and_Other_Skeletal_Conditions.pdf",
+  "Hypertension":                "https://www.benefits.va.gov/compensation/docs/hypertension.pdf",
+  "Coronary Artery Disease":     "https://www.benefits.va.gov/compensation/docs/Heart.pdf",
+  "Respiratory Conditions":      "https://www.benefits.va.gov/compensation/docs/Respiratory_Conditions_Other_than_Tuberculosis_and_Sleep_Apnea.pdf",
+  "Nasal and Sinus Conditions":  "https://www.benefits.va.gov/compensation/docs/Sinusitis_Rhinitis_and_Other_Conditions_of_the_Nose_Throat_Larynx_and_Pharynx.pdf",
+  "Sleep Apnea":                 "https://www.benefits.va.gov/compensation/docs/Sleep_Apnea.pdf",
+  "Esophageal Conditions":       "https://www.benefits.va.gov/compensation/docs/esophageal-disorders.pdf",
+  "Genitourinary Conditions":    "https://www.benefits.va.gov/compensation/docs/Urinary_Tract_Conditions.pdf",
+  "Skin Conditions":             "https://www.benefits.va.gov/compensation/docs/Skin_Diseases.pdf",
+  "Endocrine Disorders":         "https://www.benefits.va.gov/compensation/docs/Diabetes_Mellitus.pdf"
+};
+
+function getSmartMappedCodeAndDBQ(conditionName) {
+  const normalize = str => str.toLowerCase().replace(/[^a-z0-9 ]/gi, '').trim();
+  const condTokens = normalize(conditionName).split(/\s+/);
+
+  let bestMatch = null;
+  let bestScore = 0;
+
+  for (const [fullName, code] of Object.entries(conditionCodes)) {
+    const dbqText = conditionDBQs[code] || 'N/A';
+    const fullTokens = normalize(fullName).split(/\s+/);
+
+    const matchCount = condTokens.filter(tok => fullTokens.includes(tok)).length;
+    if (matchCount > bestScore) {
+      bestScore = matchCount;
+      bestMatch = { code, dbqText };
+    }
+
+    // Perfect match fallback
+    if (normalize(conditionName) === normalize(fullName)) {
+      return { code, dbqText };
+    }
+  }
+
+  return bestMatch || { code: '', dbqText: 'N/A' };
+}
+
+function createDropdown(value) {
+  const input = document.createElement("input");
+  input.setAttribute("list", "conditionsList");
+  input.value = value;
+  input.onblur = () => {
+    allConditions.add(input.value.trim());
+    updateDatalist();
+    updateCode(input.closest('tr')); // Update code when condition changes
+  };
+  return input;
+}
+const iconMap = {
+  headache: "🧠",
+  migraine: "🧠",
+  back: "🦴",
+  spine: "🦴",
+  neck: "🦴",
+  knee: "🦵",
+  leg: "🦵",
+  foot: "🦶",
+  ankle: "🦶",
+  mental: "🧘",
+  depression: "🧘",
+  anxiety: "🧘",
+  ptsd: "🧘",
+  nerve: "🔌",
+  neuropathy: "🔌",
+  radiculopathy: "🔌",
+  heart: "❤️",
+  hypertension: "❤️",
+  sinus: "👃",
+  gerd: "🔥",
+  reflux: "🔥",
+  skin: "🩹",
+  dermatitis: "🩹",
+  eczema: "🩹",
+  diabetes: "🍬",
+  endocrine: "🍬",
+  sleep: "😴"
+};
+
+function getConditionIcon(name) {
+  const lower = name.toLowerCase();
+  for (const keyword in iconMap) {
+    if (lower.includes(keyword)) return iconMap[keyword];
+  }
+  return "➕"; // Default icon if no match
+}
+
+
+function updateDatalist() {
+  const datalist = document.getElementById("conditionsList");
+  datalist.innerHTML = [...allConditions].map(c => `<option value="${c}">`).join('');
+}
+function addCondition(name = '', rating = '0', ratingDate = '', secondary = '', effDate = '', include = false) {
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td><input value="${capitalizeWords(name)}" list="conditionsList" /></td>
+
+    <td><span></span></td>
+    <td></td>
+    <td>
+      <select>
+        ${[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(v =>
+          `<option value="${v}" ${v == rating ? 'selected' : ''}>${v}</option>`
+        ).join('')}
+      </select>
+    </td>
+    <td><input type="date" value="${ratingDate}" /></td>
+    <td><input value="${secondary}" list="conditionsList" /></td>
+    <td><input type="date" value="${effDate}" /></td>
+    <td><input type="checkbox" ${include ? "checked" : ""} /></td>
+    <td><input type="checkbox" class="backpay-paid-checkbox" checked />  </td>
+    <td><button class="btn btn-sm btn-danger" onclick="deleteConditionRow(this)">❌</button></td>
+  `;
+
+  document.getElementById("conditions-container").appendChild(row);
+  updateDBQ(row);
+  setupScenarioNameAutoFill();
+  makeRowDynamic(row);
+  return row;
+}
+function deleteConditionRow(button) {
+  // 1. Remove the row
+  const row = button.closest('tr');
+  row.remove();
+  const tbody = document.getElementById('conditions-container');
+ 
+ if (tbody.children.length === 0) {
+    addCondition();
+  }
+
+  // 2. Reset What-If controls
+  const whatIfSelect = document.getElementById('whatIfPercent');
+  whatIfSelect.value = '';
+  document.getElementById('whatIfOutput').innerHTML = '';
+
+  // 3. Re-bind the scenario-name autofill to the new first row
+  setupScenarioNameAutoFill();
+
+  // 4. Recalculate everything (summary, steps, backpay, What-If)
+  calculateCompensation();
+}
+
+function updateCode(row) {
+  const conditionName = row.querySelector('td:nth-child(1) input').value;
+  const codeCell = row.querySelector('td:nth-child(2)');
+  let codeSpan = codeCell.querySelector('span');
+
+  // Remove existing span or input
+  codeCell.innerHTML = '';
+
+  // Normalize condition name for lookup
+  const normalized = conditionName.trim().toLowerCase();
+  let code = conditionCodes[conditionName];
+
+  if (!code) {
+    for (const [label, val] of Object.entries(conditionCodes)) {
+      if (label.toLowerCase() === normalized) {
+        code = val;
+        break;
+      }
+    }
+  }
+
+  if (code) {
+    // Display the found code as non-editable span
+    codeSpan = document.createElement('span');
+    codeSpan.textContent = code;
+    codeCell.appendChild(codeSpan);
+  } else {
+    // No match: allow editable code entry
+    const codeInput = document.createElement('input');
+    codeInput.type = 'text';
+    codeInput.placeholder = 'Enter code';
+    codeInput.style.width = '70px';
+
+    // On blur, convert input to span if value is entered
+    codeInput.addEventListener('blur', () => {
+      const enteredCode = codeInput.value.trim();
+      if (enteredCode) {
+        codeCell.innerHTML = '';
+        const manualSpan = document.createElement('span');
+        manualSpan.textContent = enteredCode;
+        codeCell.appendChild(manualSpan);
+        updateDBQ(row); // Recalculate DBQ after manual entry
+      }
+    });
+
+    codeCell.appendChild(codeInput);
+  }
+
+  updateDBQ(row); // Always update DBQ after setting code
+}
+
+function updateDBQ(row) {
+  const conditionName = row.querySelector('td:nth-child(1) input').value;
+  const codeSpan = row.querySelector('td:nth-child(2) span');
+  const conditionCode = codeSpan.textContent.trim();
+  const dbqCell = row.querySelector('td:nth-child(3)');
+  dbqCell.innerHTML = ''; // clear content
+  let dbqText = conditionDBQs[conditionCode];
+
+  // 🧠 Attempt realistic fallback if no direct match
+  if (!dbqText) {
+    const name = conditionName.toLowerCase();
+    if (name.includes('foot') || name.includes('ankle') || name.includes('sprain') || name.includes('plantar')) dbqText = 'Foot Conditions';
+    else if (name.includes('knee') || name.includes('leg')) dbqText = 'Knee and Lower Leg Conditions';
+    else if (name.includes('arthritis') || name.includes('joint')) dbqText = 'Joint Conditions';
+    else if (name.includes('skin') || name.includes('rash') || name.includes('dermatitis') || name.includes('eczema')) dbqText = 'Skin Conditions';
+    else if (name.includes('neck') || name.includes('cervical')) dbqText = 'Cervical Spine (Neck) Conditions';
+    else if (name.includes('lumbar') || name.includes('thoracic') || name.includes('back') || name.includes('spine')) dbqText = 'Lumbosacral and Thoracic Spine Conditions';
+    else if (name.includes('nerve') || name.includes('neuropathy') || name.includes('sciatica') || name.includes('radiculopathy')) dbqText = 'Neuropathy';
+    else if (name.includes('ptsd') || name.includes('stress')) dbqText = 'PTSD';
+    else if (name.includes('mental') || name.includes('depression') || name.includes('anxiety') || name.includes('mood')) dbqText = 'Mental Disorders';
+    else if (name.includes('headache') || name.includes('migraine')) dbqText = 'Headaches';
+    else if (name.includes('sleep') || name.includes('apnea')) dbqText = 'Sleep Apnea';
+    else if (name.includes('heart') || name.includes('ischemic') || name.includes('cad')) dbqText = 'Coronary Artery Disease';
+    else if (name.includes('blood pressure') || name.includes('hypertension')) dbqText = 'Hypertension';
+    else if (name.includes('diabetes') || name.includes('endocrine')) dbqText = 'Endocrine Disorders';
+    else if (name.includes('lung') || name.includes('bronchitis') || name.includes('asthma') || name.includes('copd')) dbqText = 'Respiratory Conditions';
+    else if (name.includes('sinus') || name.includes('rhinitis') || name.includes('nasal')) dbqText = 'Nasal and Sinus Conditions';
+    else if (name.includes('gerd') || name.includes('reflux') || name.includes('esophagus')) dbqText = 'Esophageal Conditions';
+    else if (name.includes('erectile') || name.includes('genitourinary') || name.includes('ed')) dbqText = 'Genitourinary Conditions';
+  }
+
+  // ✅ Find matching link
+ // ✅ Get DBQ label before colon (if any) and normalize
+const dbqKey = (dbqText || '').split(':')[0].trim().toLowerCase();
+
+// ✅ Try to find matching DBQ form link (case-insensitive)
+let dbqLink = null;
+for (const [label, url] of Object.entries(formLinks)) {
+  if (label.toLowerCase().trim() === dbqKey) {
+    dbqLink = url;
+    break;
+  }
+}
+
+  // ✅ Display result (prepend a helpful icon based on the condition name)
+  const condIcon = getConditionIcon(conditionName || '');
+  if ((conditionName || '').trim()) {
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = condIcon + ' ';
+    dbqCell.appendChild(iconSpan);
+  }
+
+  if (dbqText && dbqLink) {
+    const link = document.createElement('a');
+    link.href = dbqLink;
+    link.target = '_blank';
+    link.textContent = dbqText;
+    link.style.textDecoration = 'underline';
+    link.style.color = '#007bff';
+    dbqCell.appendChild(link);
+  } else {
+    const txt = document.createElement('span');
+    txt.textContent = dbqText || 'N/A';
+    dbqCell.appendChild(txt);
+  }
+}
+function monthsOwedFromEffective(effDate, asOfDate = new Date()) {
+  if (!(effDate instanceof Date) || isNaN(effDate)) return 0;
+  if (!(asOfDate instanceof Date) || isNaN(asOfDate)) asOfDate = new Date();
+
+  // VA generally pays starting the 1st of the month after the effective date.
+  const start = new Date(effDate.getFullYear(), effDate.getMonth() + 1, 1);
+  // Backpay typically runs through the end of the prior month (use 1st of current month as the cutoff).
+  const end = new Date(asOfDate.getFullYear(), asOfDate.getMonth(), 1);
+
+  const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  return Math.max(0, months);
+}
+
+function calculateBackpayValue(conditions, asOfDate = new Date()) {
+  // Sum incremental backpay for each condition whose backpay is still owed.
+  const sorted = [...conditions].sort((a, b) => a.effDate - b.effDate);
+
+  const owed = sorted.filter(c =>
+    c.include &&
+    (
+      !c.row?.getAttribute('data-import')   // newly added rows: treat as owed by default
+      || c.backpayPaid === false            // imported rows: owed only when unchecked
+    )
+  );
+
+  if (!owed.length) return 0;
+
+  return owed.reduce((sum, cond) => sum + computeConditionBackpay(cond, sorted, payRatesBase, asOfDate), 0);
+}
+
+function getDependentsAllowance(rating) {
+ const addedAmounts = {
+  10:  { spouse: 0,    child:   0,   parent:   0 },
+  20:  { spouse: 0,    child:   0,   parent:   0 },
+  30:  { spouse: 64.00,child:  31.00,parent:  51.00 },
+  40:  { spouse: 85.00,child:  42.00,parent:  68.00 },
+  50:  { spouse:106.00,child:  53.00,parent:  85.00 },
+  60:  { spouse:128.00,child:  63.00,parent: 102.00 },
+  70:  { spouse:149.00,child:  74.00,parent: 120.00 },
+  80:  { spouse:170.00,child:  84.00,parent: 137.00 },
+  90:  { spouse:192.00,child:  95.00,parent: 154.00 },
+ 100:  { spouse:213.61,child: 106.14,parent: 171.44 }
+}; 
+const rates = addedAmounts[rating] || { spouse:0, child:0, parent:0 };
+  let extra = 0;
+
+  if (document.getElementById("hasSpouse").checked) {
+    extra += rates.spouse;
+  }
+
+  const kids = parseInt(document.getElementById("numChildren")?.value || "0", 10);
+  // VA’s tables assume the *first* child is included in the base spouse rate,
+  // so you only multiply for children beyond the first. If you want *all*
+  // children, just do: extra += kids * rates.child;
+  extra += Math.max(0, kids) * rates.child;
+
+  const parents = parseInt(document.getElementById("numParents")?.value || "0", 10) || 0;
+  extra += parents * rates.parent;
+
+  return extra;
+}
+/**
+ * Given a single condition and the full sorted list,
+ * returns that condition’s back-pay:
+ */
+
+
+function computeConditionBackpay(cond, allSorted, payRatesBase, asOfDate = new Date()) {
+  const { effDate, ratingDate } = cond;
+
+  // 1) Pay Before: use only conditions effective < this date
+  const prior = allSorted.filter(c2 =>
+    c2.include && c2.effDate < effDate
+  );
+  let pool = 100, total = 0;
+  prior
+    .sort((a, b) => b.rating - a.rating)
+    .forEach(c2 => {
+      const gain = pool * (c2.rating / 100);
+      total += gain;
+      pool -= gain;
+    });
+  const roundedBefore = total >= 95 ? 100 : Math.floor(total / 10) * 10;
+  const payBefore     = payRatesBase[roundedBefore] || 0;
+
+  // 2) Pay After: use only conditions effective ≤ this date
+  const after = allSorted.filter(c2 =>
+    c2.include && c2.effDate <= effDate
+  );
+  let pool2 = 100, total2 = 0;
+  after
+    .sort((a, b) => b.rating - a.rating)
+    .forEach(c2 => {
+      const gain = pool2 * (c2.rating / 100);
+      total2 += gain;
+      pool2 -= gain;
+    });
+  const roundedAfter = total2 >= 95 ? 100 : Math.floor(total2 / 10) * 10;
+  const payAfter     = payRatesBase[roundedAfter] || 0;
+
+  // 3) Month span (VA generally pays from the month after the effective date)
+  const months = monthsOwedFromEffective(effDate, asOfDate);
+
+  return (payAfter - payBefore) * months;
+}
+
+function calculateCompensation() {
+ 
+const rows = Array.from(document.getElementById('conditions-container').children);
+  const conditions = rows.map(row => ({
+    name: row.cells[0].querySelector('input')?.value || '',
+    rating: parseInt(row.cells[3].querySelector('select')?.value || '0'),
+    effDate: new Date(row.cells[6].querySelector('input')?.value || ''),
+    ratingDate: new Date(row.cells[4].querySelector('input')?.value || ''),
+    include: row.cells[7].querySelector('input[type="checkbox"]')?.checked || false,
+    backpayPaid: row.cells[8].querySelector('.backpay-paid-checkbox').checked,
+  row
+  }));
+
+  const filtered = conditions.filter(c => c.include);
+
+  // Sort by effective date ascending
+  const sorted = [...filtered].sort((a, b) => a.effDate - b.effDate);
+
+  // Backpay calculation logic
+  let prevTotal = 0, prevEff = 100;
+  const earliestNewEffDate = sorted[sorted.length - 1]?.effDate || new Date();
+  const priorConditions = sorted.filter(c => c.effDate < earliestNewEffDate);
+
+  priorConditions.sort((a, b) => b.rating - a.rating).forEach(cond => {
+    const gain = prevEff * (cond.rating / 100);
+    prevTotal += gain;
+    prevEff -= gain;
+  });
+
+  const prevRounded = prevTotal >= 95 ? 100 : Math.floor(prevTotal / 10) * 10;
+  const prevPay = payRatesBase[prevRounded] || 0;
+
+  // New total with all conditions
+  let combined = 0, newEff = 100;
+  sorted.sort((a, b) => b.rating - a.rating).forEach(cond => {
+    const gain = newEff * (cond.rating / 100);
+    combined += gain;
+    newEff -= gain;
+  });
+
+  const roundedRating = combined >= 95 ? 100 : Math.floor(combined / 10) * 10;
+  const basePay = payRatesBase[roundedRating] || 0;
+
+  // Dependents
+  const dependents = getDependentsAllowance(roundedRating);
+
+  const total = basePay + dependents;
+
+  // What-If Scenario: disable if already 100%, enable otherwise
+  const whatIfSelectEl = document.getElementById('whatIfPercent');
+  if (whatIfSelectEl) {
+    const disableWhatIf = (roundedRating === 100);
+    whatIfSelectEl.disabled = disableWhatIf;
+    if (disableWhatIf) {
+      whatIfSelectEl.value = '';
+      const out = document.getElementById('whatIfOutput');
+      if (out) out.innerHTML = '';
+    }
+  }
+
+
+  // Determine latest rating date
+  const latestRatingDate = sorted.reduce((max, cond) => cond.ratingDate > max ? cond.ratingDate : max, earliestNewEffDate);
+ const backpay = calculateBackpayValue(sorted);
+
+  // Show Backpay Breakdown only when there is money to be paid
+  const backpaySummaryEl = document.getElementById('backpaySummary');
+  if (backpaySummaryEl) {
+    backpaySummaryEl.style.display = backpay > 0 ? '' : 'none';
+    if (backpay <= 0) {
+      const backpaySectionEl = document.getElementById('backpaySection');
+      if (backpaySectionEl) backpaySectionEl.innerHTML = '';
+      const backpayTableEl = document.getElementById('backpayTableContainer');
+      if (backpayTableEl) backpayTableEl.innerHTML = '';
+    }
+  }
+
+
+ const ratingLevelIcons = {
+  10: "😴 Just getting started",
+  20: "👣 On the path",
+  30: "📈 Steady progress",
+  40: "🚀 Gaining momentum",
+  50: "💸 At least you're getting paid",
+  60: "🎯 Getting better",
+  70: "💼 VA Verified",
+  80: "💪 Solid Veteran Status",
+  90: "🔥 Almost Maxed Out",
+  100: "👑 Godlike"
+};
+
+
+const levelMessage = ratingLevelIcons[roundedRating] || "";
+
+document.getElementById('summary').innerHTML = `
+  <div id="export-content">
+    <h3>Scenario Summary</h3>
+    <p><strong>Combined Rating:</strong> <span style="color:navy; font-weight:bold;">${combined.toFixed(1)}%</span> → 
+    <strong style="color:navy;">${roundedRating}%</strong> ${levelMessage ? `<span style="margin-left: 10px;">${levelMessage}</span>` : ''}</p>
+
+    <p>
+      <strong>Base Pay:</strong> 
+      <span style="color:green; font-weight:bold;">$${basePay.toFixed(2)}</span> &nbsp;&nbsp;
+      <strong>Dependent Adjustment:</strong> 
+      <span style="color:green; font-weight:bold;">$${dependents.toFixed(2)}</span> &nbsp;&nbsp;
+      <strong>Total Monthly Compensation:</strong> 
+      <span style="color:green; font-weight:bold;">$${total.toFixed(2)}</span> &nbsp;&nbsp;
+      <strong>Estimated Backpay:</strong> 
+      <span style="color:green; font-weight:bold;">$${backpay.toFixed(2)}</span>
+    </p>
+  </div>
+`;
+
+
+
+  document.querySelector('[onclick="exportToPDF()"]').disabled = false;
+
+  // Step-by-step VA math
+ const stepSorted = [...filtered].sort((a, b) => b.rating - a.rating);
+let stepFormatted = '<hr><h3>Step-by-Step VA Math</h3>';
+let tempEfficiency = 100;
+
+stepSorted.forEach((cond, i) => {
+  const name    = cond.name || `Condition ${i + 1}`;
+  const percent = cond.rating;
+  const icon    = getConditionIcon(name);
+
+  // annotate unpaid backpay items
+  const unpaidIcon = cond.backpayPaid === false
+    ? '<strong style="color:green; margin-left:4px;">$ Back Pay to be Paid $</strong>'
+    : '';
+
+  const gain   = tempEfficiency * (percent / 100);
+  const before = tempEfficiency;
+  tempEfficiency -= gain;
+
+  let label = "Next";
+  if (i === 0) label = "First, start with";
+  else if (i === stepSorted.length - 1) label = "Lastly,";
+
+  stepFormatted += `
+    <strong>${i + 1}.</strong> ${label} ${percent}% (${name})${unpaidIcon} ${icon}<br>
+    Remaining efficiency: ${before.toFixed(1)}%<br>
+    ${percent}% of ${before.toFixed(1)}% = ${gain.toFixed(1)}% → Remaining: ${tempEfficiency.toFixed(1)}%<br><br>
+  `;
+});
+
+
+  const finalCombined = (100 - tempEfficiency).toFixed(1);
+  const roundedCombined = Math.round(finalCombined / 10) * 10;
+  stepFormatted += `<strong>100 - ${tempEfficiency.toFixed(1)} = ${finalCombined}%</strong><br>`;
+  stepFormatted += `<strong>→ Rounds to ${roundedCombined}% ${roundedCombined === 100 ? '✅' : '❌'}</strong><br>`;
+  document.getElementById('stepSection').innerHTML = stepFormatted;
+  handleWhatIf();
+// 🧾 Build Backpay Summary Table (per‐condition with correct Pay After)
+let tableHtml = `
+  <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+    <tr style="background:#eee; text-align:left;">
+      <th style="padding:6px; border:1px solid #ccc;">🩺 Condition</th>
+      <th style="padding:6px; border:1px solid #ccc;">Eff. Date</th>
+      <th style="padding:6px; border:1px solid #ccc;">📅 Rating Date</th>
+      <th style="padding:6px; border:1px solid #ccc;">Pay Before</th>
+      <th style="padding:6px; border:1px solid #ccc;">Pay After</th>
+      <th style="padding:6px; border:1px solid #ccc;">Monthly Diff</th>
+      <th style="padding:6px; border:1px solid #ccc;">Months Owed</th>
+      <th style="padding:6px; border:1px solid #ccc;">Back-pay</th>
+    </tr>
+`;
+
+const backpayConditions = sorted.filter(c =>
+  c.include &&
+  (
+    !c.row?.getAttribute('data-import')    // brand-new
+    || c.backpayPaid === false             // imported & unpaid
+  )
+);
+
+if (backpayConditions.length) {
+  // sort by effDate ascending so you handle older ones first
+  backpayConditions
+    .sort((a, b) => a.effDate - b.effDate)
+    .forEach(cond => {
+      const { effDate, ratingDate, rating: pct, name } = cond;
+
+      // 1) Pay Before: only conditions with effDate < this effDate
+      const prior = sorted.filter(c2 =>
+        c2.include && c2.effDate < effDate
+      );
+      let effPool1 = 100, total1 = 0;
+      prior
+        .sort((a, b) => b.rating - a.rating)
+        .forEach(c2 => {
+          const g = effPool1 * (c2.rating / 100);
+          total1 += g;
+          effPool1 -= g;
+        });
+      const roundedBefore = total1 >= 95 ? 100 : Math.floor(total1 / 10) * 10;
+      const payBefore     = payRatesBase[roundedBefore] || 0;
+
+      // 2) Pay After: conditions with effDate <= this effDate
+      const afterList = sorted.filter(c2 =>
+        c2.include && c2.effDate <= effDate
+      );
+      let effPool2 = 100, total2 = 0;
+      afterList
+        .sort((a, b) => b.rating - a.rating)
+        .forEach(c2 => {
+          const g = effPool2 * (c2.rating / 100);
+          total2 += g;
+          effPool2 -= g;
+        });
+      const roundedAfter = total2 >= 95 ? 100 : Math.floor(total2 / 10) * 10;
+      const payAfter     = payRatesBase[roundedAfter] || 0;
+
+      // 3) Diff, months, backpay
+      const monthlyDiff = payAfter - payBefore;
+      const monthsBack  = monthsOwedFromEffective(effDate, new Date());
+      const backpay     = monthlyDiff * monthsBack;
+
+      // 4) Unpaid icon
+      const unpaidIcon = (cond.row?.getAttribute('data-import') && cond.backpayPaid === false)
+        ? '<strong style="color:green; margin-left:4px;">$</strong>'
+        : '';
+
+      tableHtml += `
+        <tr>
+          <td style="padding:6px; border:1px solid #ccc;">
+            ${name}${unpaidIcon}
+          </td>
+          <td style="padding:6px; border:1px solid #ccc;">
+            ${effDate.toLocaleDateString()}
+          </td>
+          <td style="padding:6px; border:1px solid #ccc;">
+            ${ratingDate.toLocaleDateString()}
+          </td>
+          <td style="padding:6px; border:1px solid #ccc;">
+            $${payBefore.toFixed(2)}
+          </td>
+          <td style="padding:6px; border:1px solid #ccc;">
+            $${payAfter.toFixed(2)}
+          </td>
+          <td style="padding:6px; border:1px solid #ccc;">
+            $${monthlyDiff.toFixed(2)}
+          </td>
+          <td style="padding:6px; border:1px solid #ccc;">
+            ${monthsBack}
+          </td>
+          <td style="padding:6px; border:1px solid #ccc;">
+            <strong>$${backpay.toFixed(2)}</strong>
+          </td>
+        </tr>
+      `;
+    });
+} else {
+  tableHtml += `
+    <tr>
+      <td colspan="8" style="padding:6px; border:1px solid #ccc;">
+        No valid back-pay data available
+      </td>
+    </tr>
+  `;
+}
+
+tableHtml += '</table>';
+document.getElementById('backpayTableContainer').innerHTML = tableHtml;
+
+tableHtml += '</table>';
+document.getElementById('backpayTableContainer').innerHTML = tableHtml;
+
+tableHtml += '</table>';
+document.getElementById('backpayTableContainer').innerHTML = `
+  <div class="table-wrapper">
+    ${tableHtml}
+  </div>
+`;
+const whatIfDropdown = document.getElementById('whatIfPercent');
+whatIfDropdown.disabled = (roundedRating === 100);
+
+}
+function parseVAHTML() {
+  const fileInput = document.getElementById("ratingHTML");
+  const file = fileInput.files[0];
+  if (!file) {
+    alert("❌ Please select a downloaded VA Ratings HTML file first.");
+    return;
+  }
+
+  const filename = file.name;
+  alert(`✅ File "${filename}" loaded successfully.`);
+
+  const reader = new FileReader();
+  reader.onload = function () {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(reader.result, "text/html");
+
+    const cards = Array.from(doc.querySelectorAll("va-card"));
+    const parsedConditions = [];
+
+    cards.forEach(card => {
+      const heading = card.querySelector("h4");
+      const span = card.querySelector("span");
+
+      if (!heading) return;
+      const match = heading.textContent.trim().match(/^(\d+)% rating for (.+)/i);
+      if (!match) return;
+
+      const rating = parseInt(match[1]);
+      const condition = match[2].trim();
+      let effDate = '';
+
+      if (span) {
+        const parsedDate = new Date(span.textContent.trim());
+        if (!isNaN(parsedDate)) {
+          effDate = parsedDate.toISOString().split("T")[0];
+        }
+      }
+
+      parsedConditions.push({ condition, rating, effDate });
+    });
+
+    if (!parsedConditions.length) {
+      alert("⚠️ No VA rating entries found.");
+      return;
+    }
+
+    const container = document.getElementById("conditions-container");
+    let loadedCount = 0;
+
+    parsedConditions.forEach((parsed, i) => {
+      const existingIndex = Array.from(container.children).findIndex(row => {
+        const val = row.cells[0].querySelector('input')?.value.trim().toLowerCase();
+        return val === parsed.condition.toLowerCase();
+      });
+
+      if (existingIndex !== -1) {
+        container.children[existingIndex].remove();
+      }
+
+      const hasSingleBlankRow = container.children.length === 1 &&
+        container.children[0].cells[0].querySelector('input')?.value.trim() === '';
+
+      let row;
+      if (hasSingleBlankRow && loadedCount === 0) {
+        row = container.children[0];
+        row.cells[0].querySelector('input').value = parsed.condition;
+        row.cells[3].querySelector('select').value = parsed.rating;
+        row.cells[6].querySelector('input[type="date"]').value = parsed.effDate;
+        row.cells[7].querySelector('input[type="checkbox"]').checked = true;
+        row.setAttribute('data-import', 'html');
+        makeRowDynamic(row);
+       
+      } else {
+        row = addCondition(parsed.condition, parsed.rating, '', '', parsed.effDate, true);
+        row.setAttribute('data-import', 'html');
+      }
+
+row.cells[4].querySelector('input[type="date"]').value = parsed.effDate; // Set Rating Date = Effective Date
+ markInvalidRatingDate(row);
+      // ✅ Smart map code + DBQ and inject directly
+      const { code, dbqText } = getSmartMappedCodeAndDBQ(parsed.condition);
+      const codeSpan = row.cells[1].querySelector('span');
+      const dbqCell = row.cells[2];
+
+      codeSpan.textContent = code;
+
+      const dbqLinkMap = {
+        'Audiology and Tinnitus': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960N-1-ARE.pdf',
+        'Hearing Loss': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960N-2-ARE.pdf',
+        'PTSD': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960P-3-ARE.pdf',
+        'Lumbosacral and Thoracic Spine Conditions': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960M-14-ARE.pdf',
+        'Nerve Injury': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960N-4-ARE.pdf',
+        'Headaches': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960C-8-ARE.pdf',
+        'Knee and Lower Leg Conditions': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960M-9-ARE.pdf',
+        'Sleep Apnea': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960L-8-ARE.pdf',
+        'Foot Conditions': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960M-6-ARE.pdf',
+        'Mental Disorders': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960P-2-ARE.pdf',
+        'Cervical Spine (Neck) Conditions': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960M-13-ARE.pdf',
+        'Hypertension': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960A-3-ARE.pdf',
+        'Endocrine Disorders': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960E-1-ARE.pdf',
+        'Neuropathy': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960C-4-ARE.pdf',
+        'Coronary Artery Disease': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960A-1-ARE.pdf',
+        'Respiratory Conditions': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960L-1-ARE.pdf',
+        'Nasal and Sinus Conditions': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960N-4-ARE.pdf',
+        'Genitourinary Conditions': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960J-4-ARE.pdf',
+        'Esophageal Conditions': 'https://www.vba.va.gov/pubs/forms/VBA-21-0960G-1-ARE.pdf'
+      };
+
+      if (dbqLinkMap[dbqText]) {
+        dbqCell.innerHTML = `<a href="${dbqLinkMap[dbqText]}" target="_blank" style="color:#007bff; text-decoration:underline;">${dbqText}</a>`;
+      } else {
+        dbqCell.textContent = dbqText;
+      }
+
+      loadedCount++;
+    });
+
+    alert(`✅ Loaded ${loadedCount} condition(s) from file: ${filename}`);
+    // Set scenario name and save
+    const scenarioName = filename.replace(/\.html?$/i, '') + '_';
+
+    document.getElementById('scenarioName').value = scenarioName;
+
+    calculateCompensation();
+    // saveToDisk();
+  };
+
+  reader.onerror = () => {
+    alert("❌ Failed to read the HTML file.");
+  };
+
+  reader.readAsText(file);
+
+}
+
+function markInvalidRatingDate(row) {
+  const ratingInput = row.cells[4].querySelector('input[type="date"]');
+  const effInput    = row.cells[6].querySelector('input[type="date"]');  // ← cell 6, not 5
+  if (!ratingInput || !effInput) return;
+
+  if (ratingInput.value === effInput.value) {
+    ratingInput.classList.add('invalid-date');
+  } else {
+    ratingInput.classList.remove('invalid-date');
+  }
+}
+
+function renderBackpayChart(startDate, months, monthlyAmount) {
+  const labels = [];
+  const values = [];
+
+  const date = new Date(startDate);
+
+  for (let i = 0; i < months; i++) {
+    const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const idx = labels.indexOf(month);
+    if (idx >= 0) {
+      values[idx] += monthlyAmount;
+    } else {
+      labels.push(month);
+      values.push(monthlyAmount);
+    }
+    date.setMonth(date.getMonth() + 1);
+  }
+
+  const ctx = document.getElementById('backpayChart').getContext('2d');
+  if (window.backpayChartInstance) {
+    window.backpayChartInstance.destroy();
+  }
+
+  window.backpayChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Estimated Backpay',
+        data: values,
+        backgroundColor: '#007bff'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: {
+          label: (ctx) => `$${ctx.raw.toFixed(2)}`
+        }}
+      },
+      scales: {
+        y: {
+          title: { display: true, text: 'Amount ($)' },
+          beginAtZero: true
+        },
+        x: {
+          ticks: {
+            autoSkip: true,
+            maxRotation: 45,
+            minRotation: 45
+          }
+        }
+      }
+    }
+  });
+}
+
+// Call this after your table is in the DOM (e.g. at the end of window.onload)
+function toggleColumn(colIndex, show) {
+  const table = document.querySelector('.table-container table');
+  Array.from(table.rows).forEach(row => {
+    const cell = row.cells[colIndex];
+    if (cell) cell.style.display = show ? '' : 'none';
+  });
+}
+
+// 2) Updated setupColumnHides: text then checkbox
+function setupColumnHides() {
+  const table       = document.querySelector('.table-container table');
+  const headerCells = table.tHead.rows[0].cells;
+  const cols = [
+    { idx: 1, label: '🔢 Code' },
+    { idx: 2, label: '☑️ DBQ' },
+    { idx: 5, label: '⚕️ Secondary' },
+    { idx: 7, label: '🧮 Calculated' },
+    { idx: 8, label: '💲 Back-pay Paid?' }
+  ];
+
+  cols.forEach(({idx, label}) => {
+    const th = headerCells[idx];
+    th.innerHTML = '';  // clear existing
+
+    // 1) Header text in its own div
+    const textDiv = document.createElement('div');
+    textDiv.textContent = label;
+    textDiv.style.textAlign = 'center';
+    th.appendChild(textDiv);
+
+    // 2) Checkbox below, centered
+    const cb = document.createElement('input');
+    cb.type        = 'checkbox';
+    cb.checked     = true;
+    cb.dataset.col = idx;
+    cb.addEventListener('change', () => toggleColumn(idx, cb.checked));
+
+    const cbDiv = document.createElement('div');
+    cbDiv.style.textAlign = 'center';
+    cbDiv.appendChild(cb);
+
+    th.appendChild(cbDiv);
+  });
+}
+// shows or hides every cell in column `colIndex`
+function toggleColumn(colIndex, show) {
+  const table = document.querySelector('.table-container table');
+  Array.from(table.rows).forEach(row => {
+    const cell = row.cells[colIndex];
+    if (cell) cell.style.display = show ? '' : 'none';
+  });
+}
+
+window.onload = () => {
+  // ─── your existing init ──────────────────────────────────────────────────────
+  document.body.insertAdjacentHTML('beforeend', '<datalist id="conditionsList"></datalist>');
+  addCondition();
+  setupScenarioNameAutoFill();
+  updateDatalist();
+  updateScenarioDropdown();
+setupColumnHides();
+// wire up the “Restore Columns” button (do this inside window.onload!)
+document.getElementById('restoreColumnsBtn').addEventListener('click', () => {
+  const table       = document.querySelector('.table-container table');
+  const headerCells = table.tHead.rows[0].cells;
+  // the same column indices used in setupColumnHides()
+  [1, 2, 5, 7, 8].forEach(idx => {
+    // grab the checkbox directly under that <th>
+    const cb = headerCells[idx].querySelector('input[type="checkbox"]');
+    if (cb) {
+      cb.checked = true;
+      toggleColumn(idx, true);
+    }
+  });
+});
+
+// ─── new: auto-load the most recent scenario ──────────────────────────────────
+ const scenarioSelect = document.getElementById('scenarioSelect');
+  const savedOptions = Array.from(scenarioSelect.options)
+    .filter(opt => opt.value && !opt.value.startsWith('New'));
+
+  if (savedOptions.length) {
+    // month abbreviation → month index
+    const monthMap = {
+      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+    };
+
+    const dated = savedOptions
+      .map(opt => {
+        const m = opt.value.match(/(\d{1,2}-[A-Za-z]{3}-\d{4})$/);
+        if (!m) return null;
+        const [day, mon, year] = m[1].split('-');
+        const date = new Date(
+          parseInt(year, 10),
+          monthMap[mon],
+          parseInt(day, 10)
+        );
+        return { opt, date };
+      })
+      .filter(x => x !== null);
+
+    if (dated.length) {
+      dated.sort((a, b) => b.date - a.date);
+      const latestName = dated[0].opt.value;
+      scenarioSelect.value = latestName;
+      loadFromDisk();
+    }
+  }
+  // ──────────────────────────────────────────────────────────────────────────────
+
+ new Sortable(document.getElementById('conditions-container'), { animation: 150 });
+
+  const lastUsed = localStorage.getItem('vaLastScenario');
+  if (lastUsed) {
+    document.getElementById('scenarioSelect').value = lastUsed;
+  }
+  document.getElementById('whatIfPercent').addEventListener('change', handleWhatIf);
+
+  // ─── wire up dependents *after* those elements exist ───────────────────────────
+  document.getElementById("hasSpouse")
+    .addEventListener("change", calculateCompensation);
+  document.getElementById("numChildren")
+    .addEventListener("input",   calculateCompensation);
+  document.getElementById("numParents")
+    .addEventListener("input",   calculateCompensation);
+};
+
+
+
+</script>
+
+<script>
+function sanitizeScenarioName(name) {
+  return name
+    // ISO dates (YYYY-MM-DD)
+    .replace(/\b\d{4}-\d{2}-\d{2}\b/g, '')
+    // US dates (M/D/YYYY or MM/DD/YYYY)
+    .replace(/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/g, '')
+    // Text dates (DD-MMM-YYYY)
+    .replace(/\b\d{1,2}-[A-Za-z]{3}-\d{4}\b/g, '')
+    // collapse multiple spaces into one, then trim
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function saveToDisk() {
+  // 1) Build the scenario name
+  const nameInput = document.getElementById('scenarioName');
+  let rawName  = nameInput.value.trim();
+  let baseName = sanitizeScenarioName(rawName);
+  if (!baseName) {
+    const firstVal = document.querySelector('#conditions-container tr input')?.value.trim();
+    if (firstVal) baseName = firstVal.replace(/\s+/g, '_');
+    if (!baseName) return alert("❌ Please enter a name before saving.");
+  }
+  const today   = new Date();
+  const dd      = String(today.getDate()).padStart(2,'0');
+  const mmm     = today.toLocaleString('en-US',{month:'short'});
+  const yyyy    = today.getFullYear();
+  const dateStr = `${dd}-${mmm}-${yyyy}`;
+  const finalName = `${baseName} ${dateStr}`;
+  nameInput.value = finalName;
+
+  // 2) Collect row data (code + dbqLabel only)
+  const rows = Array.from(document.getElementById('conditions-container').children);
+  const data = rows.map(row => {
+    const code = row.cells[1].querySelector('span')?.textContent.trim() || '';
+    const dbqLabel = row.cells[2].querySelector('a')?.textContent.trim()
+      || row.cells[2].textContent.trim() || '';
+    return {
+      name:       row.cells[0].querySelector('input')?.value.trim() || '',
+      code,
+      dbqLabel,
+      rating:     row.cells[3].querySelector('select')?.value || '0',
+      ratingDate: row.cells[4].querySelector('input')?.value || '',
+      secondary:  row.cells[5].querySelector('input')?.value || '',
+      effDate:    row.cells[6].querySelector('input')?.value || '',
+      include:    row.cells[7].querySelector('input')?.checked || false,
+      backpayPaid: row.querySelector('.backpay-paid-checkbox')?.checked || false,
+      import:     row.getAttribute('data-import') === 'html'
+    };
+  });
+
+ // 4) Build scenario object and persist
+  const scenario = {
+    conditions:    data,
+    spouse:        document.getElementById('hasSpouse').checked,
+    children:      document.getElementById('numChildren').value,
+    parents:       document.getElementById('numParents').value,
+    whatIfPercent: document.getElementById('whatIfPercent').value
+  };
+
+// Capture column‐hide settings
+  const colsToSave = [1,2,5,7,8];
+  scenario.columnVisibility = {};
+  colsToSave.forEach(idx => {
+    const cb = document.querySelector(
+      `.table-container th:nth-child(${idx+1}) input[type="checkbox"]`
+    );
+    scenario.columnVisibility[idx] = cb ? cb.checked : true;
+  });
+
+  localStorage.setItem(`vaScenario_${finalName}`, JSON.stringify(scenario));
+  updateScenarioDropdown();
+  alert(`💾 Scenario "${finalName}" saved.`);
+}
+
+function loadFromDisk() {
+  const sel = document.getElementById('scenarioSelect').value;
+  const stored = localStorage.getItem(`vaScenario_${sel}`);
+  if (!stored) return alert("⚠️ Selected scenario not found.");
+  const scenario = JSON.parse(stored);
+
+  // Update UI
+  document.getElementById('deleteScenarioBtn')
+    .textContent = `🗑️ Delete Scenario "${sel}"`;
+  const container = document.getElementById('conditions-container');
+  container.innerHTML = '';
+
+  // Rebuild rows
+  scenario.conditions.forEach(cond => {
+    const row = addCondition(
+      cond.name,
+      cond.rating,
+      cond.ratingDate,
+      cond.secondary,
+      cond.effDate,
+      cond.include
+    );
+
+    // 2) Now *explicitly* restore the two date fields in the correct cells:
+  const ratingInput = row.cells[4].querySelector('input[type="date"]');
+  const effInput    = row.cells[6].querySelector('input[type="date"]');
+  if (ratingInput) ratingInput.value = cond.ratingDate;  // YYYY-MM-DD
+  if (effInput)    effInput.value    = cond.effDate;     // YYYY-MM-DD
+
+  // 3) Restore code & DBQ and everything else…
+  row.cells[1].querySelector('span').textContent = cond.code || '';
+  row.cells[2].dataset.dbqLabel = cond.dbqLabel || '';
+  updateDBQ(row);
+
+    // Mark imported rows & backpay checkbox
+    if (cond.import) row.setAttribute('data-import','html');
+    const bp = row.querySelector('.backpay-paid-checkbox');
+    if (bp) bp.checked = !!cond.backpayPaid;
+  });
+
+  // Restore dependents & What-If
+  document.getElementById('hasSpouse').checked   = !!scenario.spouse;
+  document.getElementById('numChildren').value   = scenario.children  ?? 0;
+  document.getElementById('numParents').value    = scenario.parents   ?? 0;
+  document.getElementById('whatIfPercent').value = scenario.whatIfPercent || '';
+
+  // Name & last-used
+  document.getElementById('scenarioName').value = sel;
+  localStorage.setItem('vaLastScenario', sel);
+
+  // Rewire dynamic listeners & recalc
+  document.querySelectorAll('#conditions-container tr').forEach(makeRowDynamic);
+  setupScenarioNameAutoFill();
+  calculateCompensation();
+  handleWhatIf();
+
+ if (scenario.columnVisibility) {
+    Object.entries(scenario.columnVisibility).forEach(([idx, visible]) => {
+      const colIndex = parseInt(idx, 10);
+      const cb = document.querySelector(
+        `.table-container th:nth-child(${colIndex+1}) input[type="checkbox"]`
+      );
+      if (cb) {
+        cb.checked = visible;
+        toggleColumn(colIndex, visible);
+      }
+    });
+  }
+
+  alert(`📂 Scenario "${sel}" loaded.`);
+}
+function resetDeleteButton() {
+  document.getElementById('deleteScenarioBtn').textContent = 'Delete Scenario';
+}
+
+function deleteScenario() {
+  const selected = document.getElementById('scenarioSelect').value;
+const nameInput   = document.getElementById('scenarioName');
+  if (!selected) return alert("❌ Please select a scenario to delete.");
+
+  if (confirm(`Are you sure you want to delete "${selected}"?`)) {
+    localStorage.removeItem(`vaScenario_${selected}`);
+    resetDeleteButton();
+    updateScenarioDropdown();
+	
+    document.getElementById('scenarioName').value = '';
+    alert(`🗑️ Scenario "${selected}" deleted.`);
+    if (!nameInput.value.trim()) {
+      nameInput.value = 'Rated Disabilities _ Veterans Affairs';
+    }
+  }
+}
+
+function updateScenarioDropdown() {
+  const dropdown = document.getElementById('scenarioSelect');
+  dropdown.innerHTML = '<option value="">-- Select a Scenario --</option>';
+
+document.getElementById('scenarioSelect').addEventListener('change', function () {
+  const selected = this.value;
+  const deleteBtn = document.getElementById('deleteScenarioBtn');
+  deleteBtn.textContent = selected ? `🗑️ Delete Scenario "${selected}"` : "🗑️ Delete Scenario";
+});
+
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('vaScenario_')) {
+      const name = key.replace('vaScenario_', '');
+      const option = document.createElement('option');
+      option.value = name;
+      option.textContent = name;
+      dropdown.appendChild(option);
+    }
+  });
+
+  // Update delete button label
+  dropdown.onchange = function () {
+    const selected = dropdown.value;
+    const deleteBtn = document.getElementById('deleteScenarioBtn');
+    deleteBtn.textContent = selected ? `🗑️ Delete "${selected}"` : '🗑️ 🗑️ Delete Scenario';
+  };
+}
+
+function autoFillScenarioName() {
+  const input = document.querySelector('#conditions-container tr td:first-child input');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    const nameBox = document.getElementById('scenarioName');
+    if (!nameBox.value.trim()) {
+      nameBox.value = input.value.trim().replace(/\s+/g, '_');
+    }
+  });
+}
+
+function setupScenarioNameAutoFill() {
+  const scenarioField = document.getElementById('scenarioName');
+  const firstConditionInput = document.querySelector('#conditions-container tr td:first-child input');
+  if (!firstConditionInput) return;
+
+  firstConditionInput.addEventListener('input', () => {
+    if (!scenarioField.dataset.userSet || scenarioField.dataset.userSet === "false") {
+      const val = firstConditionInput.value.trim().replace(/\s+/g, '_');
+      scenarioField.value = val;
+    }
+  });
+
+  scenarioField.addEventListener('input', () => {
+    scenarioField.dataset.userSet = scenarioField.value.trim() !== "" ? "true" : "false";
+  });
+}
+
+
+function clearAllConditions() {
+  const tbody = document.getElementById("conditions-container");
+  tbody.innerHTML = '';
+  addCondition(); // re-add blank row
+  document.getElementById('summary').innerHTML = '';
+  document.getElementById('stepSection').innerHTML = '';
+  document.getElementById('whatIfOutput').innerHTML = '';
+  if (window.backpayChartInstance) {
+    window.backpayChartInstance.destroy();
+  }
+}
+
+
+function exportToPDF() {
+  const summary = document.getElementById('summary')?.innerHTML || '';
+  const stepSection = document.getElementById('stepSection')?.innerHTML || '';
+  const whatIf = document.getElementById('whatIfOutput')?.innerHTML || '';
+  const backpayTable = document.getElementById('backpayTableContainer')?.innerHTML || '';
+
+  const rows = Array.from(document.getElementById('conditions-container').children);
+  const conditionsTable = `
+    <table border="1" cellspacing="0" cellpadding="6" style="width:100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background:#eee;">
+          <th>🩺 Condition</th><th>🔢 Code</th><th>☑️ DBQ</th><th>Rating</th><th>📅 Rating Date</th><th>Secondary</th><th>🗓️ Effective Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(row => `
+          <tr>
+            <td>${row.cells[0]?.querySelector('input')?.value || ''}</td>
+            <td>${row.cells[1]?.querySelector('span')?.textContent || ''}</td>
+            <td>${row.cells[2]?.innerHTML || ''}</td>
+            <td>${row.cells[3]?.querySelector('select')?.value || ''}%</td>
+            <td>${row.cells[4]?.querySelector('input')?.value || ''}</td>
+            <td>${row.cells[5]?.querySelector('input')?.value || ''}</td>
+            <td>${row.cells[6]?.querySelector('input')?.value || ''}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+
+  const today = new Date().toLocaleDateString(undefined, {
+    year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  const html = `
+    <html>
+      <head>
+        <title>VA Scenario PDF</title>
+        <style>
+          @media print {
+            body {
+              margin: 1in 0.75in 1in 0.75in;
+            }
+          }
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            margin: 1in 0.75in 1in 0.75in;
+          }
+          h2, h3 {
+            margin-top: 30px;
+            margin-bottom: 10px;
+          }
+          table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+          }
+          th, td {
+            border: 1px solid #ccc;
+            padding: 6px;
+          }
+          th {
+            background-color: #f0f0f0;
+          }
+          .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 6px;
+            margin-bottom: 20px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header-bar">
+          <h2>VA Disability Compensation Scenario Summary</h2>
+          <div style="font-size: 12px;">${today}</div>
+        </div>
+
+        <h3>Scenario Overview</h3>
+        ${summary}
+
+        <h3>Conditions Table</h3>
+        ${conditionsTable}
+
+        <h3>Step-by-Step VA Math</h3>
+        ${stepSection}
+
+        <h3>What-If Projection</h3>
+        ${whatIf}
+
+        <h3>Backpay Breakdown</h3>
+        ${backpayTable}
+      </body>
+    </html>
+  `;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  win.print();
+}
+function capitalizeWords(str) {
+  return str.replace(/\b\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+}
+function handleWhatIf() {
+  const extra = parseInt(document.getElementById('whatIfPercent').value);
+  const outputEl = document.getElementById('whatIfOutput');
+  outputEl.innerHTML = ''; // Clear previous output
+
+  const rows = Array.from(document.getElementById('conditions-container').children);
+  const conditions = rows.map(row => {
+    return {
+      name: row.cells[0].querySelector('input')?.value || '',
+      rating: parseInt(row.cells[3].querySelector('select')?.value || '0'),
+      include: row.cells[7].querySelector('input[type="checkbox"]')?.checked || false
+    };
+  }).filter(c => c.include);
+
+  let efficiency = 100;
+  let currentTotal = 0;
+  const sorted = [...conditions].sort((a, b) => b.rating - a.rating);
+
+  sorted.forEach(cond => {
+    const gain = efficiency * (cond.rating / 100);
+    currentTotal += gain;
+    efficiency -= gain;
+  });
+
+  const currentRounded = currentTotal >= 95 ? 100 : Math.floor(currentTotal / 10) * 10;
+
+  // 👉 If already rounded to 100%, no What-If needed
+  if (currentRounded === 100) {
+    outputEl.innerHTML = `<p>🎉 Your current combined rating already rounds to <strong>100%</strong> ✅</p>`;
+    return;
+  }
+
+  // Proceed with What-If if extra is selected
+  if (!extra || isNaN(extra)) return;
+
+  const whatIfGain = efficiency * (extra / 100);
+  const finalTotal = currentTotal + whatIfGain;
+const rounded = finalTotal >= 95 ? 100 : Math.floor(finalTotal / 10) * 10;
+// Base pays
+let currentPay = payRatesBase[currentRounded] || 0;
+let finalPay = payRatesBase[rounded] || 0;
+
+// Dependent adjustment
+const spouse = document.getElementById('hasSpouse').checked ? 100 : 0;
+const children = parseInt(document.getElementById('numChildren').value) || 0;
+const parents = parseInt(document.getElementById('numParents').value) || 0;
+const dependentsAdj = spouse + children * 80 + parents * 75;
+
+// Add adjustment to both current and final pay
+currentPay += dependentsAdj;
+finalPay += dependentsAdj;
+
+  const increase = finalPay - currentPay;
+
+  const symbol = finalPay > currentPay ? '✅' : (finalPay === currentPay ? '➖' : '❌');
+
+let result = `
+  <p>➕ Add <strong>${extra}%</strong> → New Combined: <strong>${finalTotal.toFixed(1)}%</strong> → Rounds to <strong>${rounded}%</strong> ${rounded === 100 ? '✅' : '❌'}</p>
+  <p><strong>New Monthly Compensation:</strong> <span style="color:green; font-weight:bold;">$${finalPay.toFixed(2)}</span> ${symbol}</p>
+  <p><strong>Increase Over Current:</strong> <span style="color:green; font-weight:bold;">$${increase.toFixed(2)}</span></p>
+`;
+
+
+// Show "To Reach 100%" section only if what-if doesn't round to 100
+if (finalTotal < 95) {
+  const ratingsOnly = sorted.map(c => c.rating); // Only ratings of included conditions
+  const possibleRatings = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+  let neededGain = 0;
+  let requiredPercent = 0;
+
+  for (let r of possibleRatings) {
+    const newTotal = calculateVAMath([...ratingsOnly, extra, r]);
+    if (newTotal >= 95) {
+      const finalNow = calculateVAMath([...ratingsOnly, extra]);
+      neededGain = 95 - finalNow;
+      requiredPercent = r;
+      break;
+    }
+  }
+
+  result += `<p><strong>To reach 100%:</strong> Need +${neededGain.toFixed(1)}% more → Add at least <strong>${requiredPercent}%</strong> condition</p>`;
+}
+
+
+  outputEl.innerHTML = result;
+}
+function calculateVAMath(ratingsArray) {
+  const sorted = ratingsArray.slice().sort((a, b) => b - a);
+  let efficiency = 100;
+  let total = 0;
+
+  for (let r of sorted) {
+    const gain = (efficiency * r) / 100;
+    total += gain;
+    efficiency -= gain;
+  }
+
+  return total;
+}
+
+// 🔁 Makes all inputs in a condition row trigger updates on change
+function makeRowDynamic(row) {
+  // 1) Only wire updateCode → calculateCompensation on the condition‐name field
+  const nameInput = row.querySelector('td:nth-child(1) input');
+  if (nameInput) {
+    ['input','change'].forEach(evt => {
+      nameInput.addEventListener(evt, () => {
+        updateCode(row);
+        calculateCompensation();
+      });
+    });
+  }
+
+  // 2) All other fields (dates, rating select, secondary, include checkbox) → only recalc
+  //    We exclude the name input from this selector.
+  const otherFields = row.querySelectorAll(
+    'input:not([list]), select, input.backpay-paid-checkbox'
+  );
+  otherFields.forEach(field => {
+    ['input','change'].forEach(evt => {
+      field.addEventListener(evt, () => {
+        calculateCompensation();
+      });
+    });
+  });
+const ratingInput = row.cells[4].querySelector('input[type="date"]');
+  if (ratingInput) {
+    // initial flag
+    markInvalidRatingDate(row);
+    // re-check on every change
+    ratingInput.addEventListener('change', () => {
+markInvalidRatingDate(row);    
+calculateCompensation();
+    });
+  }
+
+}
+// 🛠️ Ensure What-If listener is always applied
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById('whatIfPercent').addEventListener('change', handleWhatIf);
+});
+</script>
+<script>
+(function(){
+  const q = document.getElementById('conditionSearch');
+  if(!q) return;
+  const tbody = document.getElementById('conditions-container');
+  const normalize = s => (s||'').toLowerCase();
+  function apply(){
+    const term = normalize(q.value).trim();
+    const rows = tbody ? Array.from(tbody.querySelectorAll('tr')) : [];
+    rows.forEach(r=>{
+      const nameCell = r.cells && r.cells[0] ? r.cells[0].innerText : '';
+      const show = !term || normalize(nameCell).includes(term);
+      r.style.display = show ? '' : 'none';
+    });
+  }
+  q.addEventListener('input', apply);
+})();
+</script></body>
+</html>
